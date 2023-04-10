@@ -18,7 +18,7 @@ pygame.display.set_icon(icon)
 fps = 60
 
 # Font
-font = pygame.font.Font('font.ttf', 20)
+font = pygame.font.Font('font.ttf', 15)
 
 # Colors
 bg_color = pygame.Color('grey12')
@@ -26,17 +26,17 @@ light_grey = (200,200,200)
 
 # Game Variables
 ball = pygame.Rect(display_width/2 - 8, display_height/2 - 8, 16, 16)
-player_1 = pygame.Rect(5, display_height/2 - 50, 7, 100)
+player = pygame.Rect(5, display_height/2 - 50, 7, 100)
 opponent = pygame.Rect(display_width - 10, display_height/2 - 50, 7, 100)
 ball_speed_x = 4
 ball_speed_y = 4
-player_1_speed = 0
+player_speed = 0
 player_2_speed = 0
 opponent_speed = 4
 
-# Timer
-countdown_time = 3
-start_timer = pygame.time.get_ticks()
+# Score Var
+player_score = 0
+opponent_score = 0
 
 # Functions
 def ball_mechanics():
@@ -53,16 +53,16 @@ def ball_mechanics():
         ball_speed_x *= random.choice((-1,1))
 
     # Pong Collide Mechanic
-    if ball.colliderect(player_1) or ball.colliderect(opponent):
+    if ball.colliderect(player) or ball.colliderect(opponent):
         ball_speed_x *= -1
 
 def player_mechanics():
-    # Player_1 Mechanic
-    player_1.y += player_1_speed
-    if player_1.top <= 5 : 
-        player_1.top = 5
-    if player_1.bottom >= display_height - 5 : 
-        player_1.bottom = display_height - 5
+    # player Mechanic
+    player.y += player_speed
+    if player.top <= 5 : 
+        player.top = 5
+    if player.bottom >= display_height - 5 : 
+        player.bottom = display_height - 5
 
 def ai_mechanics():
     # AI Mechanics
@@ -75,6 +75,13 @@ def ai_mechanics():
     if opponent.bottom >= display_height - 5 : 
         opponent.bottom = display_height - 5 
 
+def score_mechanics():
+    global player_score, opponent_score
+    if ball.left <= 5 :
+        opponent_score += 1
+    if ball.right >= display_width - 5 :
+        player_score += 1
+
 # Run Game
 while True :
     # Input Handler
@@ -84,26 +91,35 @@ while True :
             exit()
         if event.type == pygame.KEYDOWN :
             if event.key == pygame.K_w:
-                player_1_speed -= 5
+                player_speed -= 5
             if event.key == pygame.K_s:
-                player_1_speed += 5
+                player_speed += 5
         if event.type == pygame.KEYUP :
             if event.key == pygame.K_w:
-                player_1_speed += 5
+                player_speed += 5
             if event.key == pygame.K_s:
-                player_1_speed -= 5
-
-    # Visuals
-    display.fill(bg_color)
-    pygame.draw.rect(display, light_grey, player_1)
-    pygame.draw.rect(display, light_grey, opponent)
-    pygame.draw.ellipse(display, light_grey, ball)
-    pygame.draw.aaline(display, light_grey, (display_width/2, 0), (display_width/2, display_height)) 
+                player_speed -= 5
 
     # Call Out Functions
     ball_mechanics()
     player_mechanics()
     ai_mechanics()
+    score_mechanics()
+
+    # Background
+    display.fill(bg_color)
+
+    # Score Visuals
+    player_text = font.render(f"{player_score}", True, light_grey)
+    display.blit(player_text, (295, 220))
+    opponent_text = font.render(f"{opponent_score}", True, light_grey)
+    display.blit(opponent_text, (330, 220))
+
+    # Game Visuals
+    pygame.draw.rect(display, light_grey, player)
+    pygame.draw.rect(display, light_grey, opponent)
+    pygame.draw.ellipse(display, light_grey, ball)
+    pygame.draw.aaline(display, light_grey, (display_width/2, 0), (display_width/2, display_height)) 
     
     # Update Window
     pygame.display.update()

@@ -38,9 +38,13 @@ opponent_speed = 4
 player_score = 0
 opponent_score = 0
 
+# Timer Var
+score_time = True
+
+
 # Functions
 def ball_mechanics():
-    global ball_speed_x, ball_speed_y
+    global ball_speed_x, ball_speed_y, player_score, opponent_score, score_time
 
     # Pong Ball Mechanics
     ball.x += ball_speed_x
@@ -48,9 +52,15 @@ def ball_mechanics():
     if ball.top <= 0 or ball.bottom >= display_height:
         ball_speed_y *= -1
     if ball.left <= 0 or ball.right >= display_width:
-        ball.center = (display_width/2, display_height/2)
-        ball_speed_y *= random.choice((-1,1))
-        ball_speed_x *= random.choice((-1,1))
+        ball_start()
+
+    # Pong Timer
+    if ball.left <= 5 :
+        opponent_score += 1
+        score_time = pygame.time.get_ticks()
+    if ball.right >= display_width - 5 :
+        player_score += 1
+        score_time = pygame.time.get_ticks()
 
     # Pong Collide Mechanic
     if ball.colliderect(player) or ball.colliderect(opponent):
@@ -74,13 +84,32 @@ def ai_mechanics():
         opponent.top = 5
     if opponent.bottom >= display_height - 5 : 
         opponent.bottom = display_height - 5 
+    
+def ball_start():
+    global ball_speed_x, ball_speed_y, score_time
 
-def score_mechanics():
-    global player_score, opponent_score
-    if ball.left <= 5 :
-        opponent_score += 1
-    if ball.right >= display_width - 5 :
-        player_score += 1
+    # Timer When Ball Restarts
+    current_time = pygame.time.get_ticks()
+    ball.center = (display_width/2, display_height/2)
+
+    # Timer Display
+    if current_time - score_time < 700:
+        number_three = font.render('3', True, light_grey)
+        display.blit(number_three, (display_width/2 - 6, display_height/2 + 20))
+    if 700 < current_time - score_time < 1400:
+        number_two = font.render('2', True, light_grey)
+        display.blit(number_two, (display_width/2 - 6, display_height/2 + 20))
+    if 1400 < current_time - score_time < 2100:
+        number_one = font.render('1', True, light_grey)
+        display.blit(number_one, (display_width/2 - 6, display_height/2 + 20))
+
+    if current_time - score_time < 2100 :
+        ball_speed_x = 0
+        ball_speed_y = 0
+    else :
+        ball_speed_y = 4 * random.choice((-1,1))
+        ball_speed_x = 4 * random.choice((-1,1))
+        score_time = None
 
 # Run Game
 while True :
@@ -104,16 +133,18 @@ while True :
     ball_mechanics()
     player_mechanics()
     ai_mechanics()
-    score_mechanics()
 
     # Background
     display.fill(bg_color)
 
+    if score_time :
+        ball_start()
+
     # Score Visuals
     player_text = font.render(f"{player_score}", True, light_grey)
-    display.blit(player_text, (295, 220))
+    display.blit(player_text, (290, 220))
     opponent_text = font.render(f"{opponent_score}", True, light_grey)
-    display.blit(opponent_text, (330, 220))
+    display.blit(opponent_text, (335, 220))
 
     # Game Visuals
     pygame.draw.rect(display, light_grey, player)

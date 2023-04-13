@@ -32,7 +32,12 @@ ball_speed_x = 4
 ball_speed_y = 4
 player_speed = 0
 player_2_speed = 0
-opponent_speed = 4
+opponent_speed = 6
+
+# Sound
+pong_sound1 = pygame.mixer.Sound('sound/pong_1.wav')
+pong_sound2 = pygame.mixer.Sound('sound/pong_2.wav')
+hit_sound = pygame.mixer.Sound('sound/hit.wav')
 
 # Score Var
 player_score = 0
@@ -40,7 +45,6 @@ opponent_score = 0
 
 # Timer Var
 score_time = True
-
 
 # Functions
 def ball_mechanics():
@@ -50,20 +54,24 @@ def ball_mechanics():
     ball.x += ball_speed_x
     ball.y += ball_speed_y
     if ball.top <= 0 or ball.bottom >= display_height:
+        pong_sound1.play()
         ball_speed_y *= -1
     if ball.left <= 0 or ball.right >= display_width:
         ball_start()
 
     # Pong Timer
     if ball.left <= 5 :
+        hit_sound.play()
         opponent_score += 1
         score_time = pygame.time.get_ticks()
     if ball.right >= display_width - 5 :
+        hit_sound.play()
         player_score += 1
         score_time = pygame.time.get_ticks()
 
     # Pong Collide Mechanic
     if ball.colliderect(player) or ball.colliderect(opponent):
+        pong_sound2.play()
         ball_speed_x *= -1
 
 def player_mechanics():
@@ -101,7 +109,7 @@ def ball_start():
         display.blit(number_two, (display_width/2 - 6, display_height/2 + 20))
     if 1400 < current_time - score_time < 2100:
         number_one = font.render('1', True, light_grey)
-        display.blit(number_one, (display_width/2 - 6, display_height/2 + 20))
+        display.blit(number_one, (display_width/2 - 7, display_height/2 + 20))
 
     if current_time - score_time < 2100 :
         ball_speed_x = 0
@@ -120,14 +128,14 @@ while True :
             exit()
         if event.type == pygame.KEYDOWN :
             if event.key == pygame.K_w:
-                player_speed -= 5
+                player_speed -= 3
             if event.key == pygame.K_s:
-                player_speed += 5
+                player_speed += 3
         if event.type == pygame.KEYUP :
             if event.key == pygame.K_w:
-                player_speed += 5
+                player_speed += 3
             if event.key == pygame.K_s:
-                player_speed -= 5
+                player_speed -= 3
 
     # Call Out Functions
     ball_mechanics()
@@ -136,9 +144,6 @@ while True :
 
     # Background
     display.fill(bg_color)
-
-    if score_time :
-        ball_start()
 
     # Score Visuals
     player_text = font.render(f"{player_score}", True, light_grey)
@@ -151,6 +156,10 @@ while True :
     pygame.draw.rect(display, light_grey, opponent)
     pygame.draw.ellipse(display, light_grey, ball)
     pygame.draw.aaline(display, light_grey, (display_width/2, 0), (display_width/2, display_height)) 
+
+    # Timer and Start
+    if score_time :
+        ball_start()
     
     # Update Window
     pygame.display.update()
